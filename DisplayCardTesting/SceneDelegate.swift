@@ -24,21 +24,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     private func createTabBar() -> UITabBarController {
         let vc = UITabBarController()
-        vc.viewControllers = [createTabOne(), createTabTwo()]
+        vc.viewControllers = [createTabOne()]
         return vc
     }
     
     private func createTabOne() -> UINavigationController {
         let vc = TabOneVC()
-        vc.title = "Tab 1"
+        vc.title = "Dragging View Example"
         return UINavigationController(rootViewController: vc)
     }
     
-    private func createTabTwo() -> UINavigationController {
-        let vc = TabTwoVC()
-        vc.title = "Tab 2"
-        return UINavigationController(rootViewController: vc)
-    }
 
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.

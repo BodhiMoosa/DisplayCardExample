@@ -10,16 +10,16 @@ import UIKit
 
 class TabOneVC: UIViewController {
     
-    var tableView       : UITableView!
-    var cardTableView   : UITableView!
-    var rowHeight       = 50     // use this to keep keep card limited in height based on cardRowHeight
-    let cardView        = CardView()
-    var origin          : CGRect!
-    var topPoint        : CGFloat!
-    var bottomPoint     : CGFloat!
-    var data            = [Character]()
-    var character       : Character?
-    var selectionOfData = ["Gender: ", "House: ", "Actor: ", "Patronus: "]
+    var mainTableView       : UITableView! // main table view to display all characters
+    var cardTableView       : UITableView! // table for specific character data in card view
+    var rowHeight : CGFloat = 50     // use this to keep keep card limited in height based on cardRowHeight
+    let cardView            = CardView() // the card view you'll drag that displays character data
+    var origin              : CGRect!  // origin of card view when the drag action begins
+    var topPoint            : CGFloat! // the highest point you want your card view to travel
+    var bottomPoint         : CGFloat! // the lowest point you want your card view to travel
+    var data                = [Character]() // data for your main table
+    var character           : Character? // the individual character you select to show
+    var selectionOfData     = ["Gender: ", "House: ", "Actor: ", "Patronus: "] // the fields to show on your card view's table
     
     
     override func viewDidLoad() {
@@ -31,9 +31,9 @@ class TabOneVC: UIViewController {
     }
     
     override func viewDidLayoutSubviews() {
-        //topPoint    = view.safeAreaInsets.top //highest point we want our card to scroll up
-        topPoint        = view.frame.height - (CGFloat(rowHeight * 5) + view.safeAreaInsets.bottom)
-        bottomPoint = view.frame.height - (50 + view.safeAreaInsets.bottom) // lowest point we want our card to scroll down
+        let totalHeight = rowHeight * CGFloat((selectionOfData.count + 1)) // gets the total hight to display all cardView's table cells and accounts for the top bar of the cardView
+        topPoint        = view.frame.height - (totalHeight + view.safeAreaInsets.bottom)  // gets the top point you want to drag the cardView to
+        bottomPoint = view.frame.height - (50 + view.safeAreaInsets.bottom) // lowest point we want our card to scroll down (leaves the 50 point top bar exposed)
     }
 
     private func configure() {
@@ -50,21 +50,21 @@ class TabOneVC: UIViewController {
     }
     
     private func tableSetUp() {
-        tableView = UITableView()
-        tableView.backgroundColor = .clear
-        tableView.tableFooterView = UIView()
-        tableView.delegate = self
-        tableView.dataSource = self
-        view.addSubview(tableView)
-        view.sendSubviewToBack(tableView)
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.register(CharacterCell.self, forCellReuseIdentifier: CharacterCell.reuseID)
-        tableView.rowHeight = 50
+        mainTableView = UITableView()
+        mainTableView.backgroundColor = .clear
+        mainTableView.tableFooterView = UIView()
+        mainTableView.delegate = self
+        mainTableView.dataSource = self
+        view.addSubview(mainTableView)
+        view.sendSubviewToBack(mainTableView)
+        mainTableView.translatesAutoresizingMaskIntoConstraints = false
+        mainTableView.register(CharacterCell.self, forCellReuseIdentifier: CharacterCell.reuseID)
+        mainTableView.rowHeight = rowHeight
         NSLayoutConstraint.activate([
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50),
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
+            mainTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            mainTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            mainTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50),
+            mainTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
         ])
     }
     
@@ -120,8 +120,7 @@ class TabOneVC: UIViewController {
             case .success(let characters):
                 self.data = characters
                 DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                    self.cardTableView.reloadData()
+                    self.mainTableView.reloadData()
                 }
             case .failure(let error):
                 print(error)
@@ -132,7 +131,7 @@ class TabOneVC: UIViewController {
 
 extension TabOneVC : UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if tableView == self.tableView {
+        if tableView == self.mainTableView {
             return data.count
         } else {
             return selectionOfData.count
@@ -141,7 +140,7 @@ extension TabOneVC : UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: CharacterCell.reuseID) as! CharacterCell
-        if tableView == self.tableView {
+        if tableView == self.mainTableView {
             cell.set(title: data[indexPath.row].name, alignment: .center)
             if let character = character, character.name == data[indexPath.row].name {
                 cell.label.textColor = .white
@@ -155,7 +154,7 @@ extension TabOneVC : UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if tableView == self.tableView {
+        if tableView == self.mainTableView {
             character = data[indexPath.row]
             let cell = tableView.cellForRow(at: indexPath) as! CharacterCell
             cell.label.textColor = .white

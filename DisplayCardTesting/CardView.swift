@@ -64,7 +64,4 @@ class CardView: UIView {
             grabView.bottomAnchor.constraint(equalTo: bodyView.topAnchor)
         ])
     }
-    
-    
-
 }
